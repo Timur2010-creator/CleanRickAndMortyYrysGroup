@@ -1,5 +1,6 @@
 package com.example.cleanrickandmorty.presentation.adapter
 
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -39,6 +40,10 @@ class CharacterAdapter(
                 .into(binding.image)
 
             binding.name.text = characterResponse.name
+            binding.status.text = characterResponse.status
+            binding.gender.text = characterResponse.gender
+            binding.species.text = characterResponse.species
+            binding.statusColor.setBackgroundColor(if (characterResponse.status == "Alive" ) Color.GREEN else Color.RED)
 
             binding.root.setOnClickListener {
                 onClickListener.onClick(characterResponse.id)

@@ -9,7 +9,17 @@
     android:gravity="center"
     tools:context=".presentation.activity.DetailActivity">
 
+
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:background="@drawable/shape"
+        android:clipToOutline="true" />
+
     <TextView
+        android:text="Имя"
         android:id="@+id/name"
         android:textSize="40sp"
         android:textStyle="bold"
@@ -18,16 +28,46 @@
         android:layout_height="wrap_content" />
 
     <TextView
-        android:id="@+id/episode"
-        android:textSize="40sp"
+        android:id="@+id/gender"
         android:textStyle="bold"
-        android:textColor="@color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Пол"/>
+
+    <TextView
+        android:id="@+id/species"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:text="Определение" />
+
+    <TextView
+        android:id="@+id/location"
+        android:textStyle="bold"
+        android:text="Локация"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <ImageView
-        android:id="@+id/image"
-        android:layout_width="match_parent"
-        android:layout_height="400dp"/>
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:orientation="horizontal" >
+
+
+        <TextView
+            android:id="@+id/status"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Статус" />
+
+        <View
+            android:id="@+id/status_color"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@color/black"/>
+
+    </LinearLayout>
+
 
 </LinearLayout>

@@ -11,5 +11,9 @@ fun CharacterDto.Result.toResult() : Character.Result = Character.Result(
     image = this.image,
     name = this.name,
     id = this.id,
-    episode = this.episode
+    gender = this.gender,
+    status = this.status,
+    species = this.species,
+    location = this.location,
+
 )

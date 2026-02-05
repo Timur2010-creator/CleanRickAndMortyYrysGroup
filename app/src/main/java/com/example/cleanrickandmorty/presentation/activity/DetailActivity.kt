@@ -1,5 +1,6 @@
 package com.example.cleanrickandmorty.presentation.activity
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
@@ -50,6 +51,11 @@ class DetailActivity : AppCompatActivity() {
                                     .centerCrop()
                                     .placeholder(android.R.color.darker_gray)
                                     .into(binding.image)
+                                binding.location.text = state.data.location?.name ?: "Unknown location"
+                                binding.species.text = state.data.species
+                                binding.gender.text = state.data.gender
+                                binding.status.text = state.data.status
+                                binding.statusColor.setBackgroundColor(if (state.data.status == "Alive" ) Color.GREEN else Color.RED)
                             }
                         }
                     }
