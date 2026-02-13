@@ -13,8 +13,6 @@ data class Character(
         val status: String,
         val gender: String,
         val species: String,
-        val location: Location,
-        val origin: CharacterDto.Result.Origin,
         val type: String,
         val episode: List<String>,
         )

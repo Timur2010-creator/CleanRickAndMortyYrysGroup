@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         // По умолчанию открываем фрагмент "Персонажи"
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
-                replace(R.id.nav_characters, CharactersFragment())
+                replace(R.id.fragment_container, CharactersFragment())
             }
         }
 
@@ -31,13 +31,13 @@ class MainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.nav_characters -> {
                     supportFragmentManager.commit {
-                        replace(R.id.characterRecyclerView, CharactersFragment())
+                        replace(R.id.fragment_container, CharactersFragment())
                     }
                     true
                 }
                 R.id.nav_favorites -> {
                     supportFragmentManager.commit {
-                        replace(R.id.favoritesRecyclerView, FavoritesFragment())
+                        replace(R.id.fragment_container, FavoritesFragment())
                     }
                     true
                 }

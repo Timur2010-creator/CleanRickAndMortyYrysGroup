@@ -30,7 +30,9 @@ class CharacterAdapter(
     }
 
     inner class ViewHolder(private val binding: CharacterHolderBinding) : RecyclerView.ViewHolder(binding.root) {
+
         fun bind(character: Character.Result) {
+            // Загрузка изображения персонажа
             Glide.with(binding.image.context)
                 .load(character.image)
                 .centerCrop()
@@ -41,27 +43,30 @@ class CharacterAdapter(
             binding.status.text = character.status
             binding.species.text = character.species
 
+            // Индикатор статуса (Alive/Dead)
             val colorRes = when (character.status) {
                 "Alive" -> R.color.status_alive
                 "Dead" -> R.color.status_dead
                 else -> R.color.status_unknown
             }
-            binding.statusIndicator.setColorFilter(ContextCompat.getColor(itemView.context, colorRes))
-
-            // ================== Логика кнопки сердца ==================
-            val favoriteIds = prefs.getStringSet("favorite_ids", mutableSetOf()) ?: mutableSetOf()
-            val isFavorite = favoriteIds.contains(character.id.toString())
-            updateFavoriteIcon(isFavorite)
+            binding.statusIndicator.setColorFilter(ContextCompat.getColor(context, colorRes))
+            val characterId = character.id.toString()
+            val favoriteIds = prefs.getStringSet("favorite_ids", emptySet())?.toMutableSet() ?: mutableSetOf()
+            var isFavorite = favoriteIds.contains(characterId)
+            updateFavoriteUI(isFavorite)
 
             binding.favoriteButton.setOnClickListener {
-                val currentlyFavorite = favoriteIds.contains(character.id.toString())
-                if (currentlyFavorite) {
-                    favoriteIds.remove(character.id.toString())
+                val currentIds = prefs.getStringSet("favorite_ids", emptySet())?.toMutableSet() ?: mutableSetOf()
+
+                if (currentIds.contains(characterId)) {
+                    currentIds.remove(characterId)
+                    isFavorite = false
                 } else {
-                    favoriteIds.add(character.id.toString())
+                    currentIds.add(characterId)
+                    isFavorite = true
                 }
-                prefs.edit().putStringSet("favorite_ids", favoriteIds).apply()
-                updateFavoriteIcon(!currentlyFavorite)
+                prefs.edit().putStringSet("favorite_ids", currentIds).apply()
+                updateFavoriteUI(isFavorite)
             }
 
             binding.root.setOnClickListener {
@@ -69,9 +74,16 @@ class CharacterAdapter(
             }
         }
 
-        private fun updateFavoriteIcon(isFavorite: Boolean) {
-            val icon = if (isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
-            binding.favoriteButton.setImageResource(icon)
+        private fun updateFavoriteUI(isFavorite: Boolean) {
+            val iconRes = if (isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
+            binding.favoriteButton.setImageResource(iconRes)
+
+            // Если иконка залита не тем цветом в XML, принудительно красим её в красный
+            if (isFavorite) {
+                binding.favoriteButton.setColorFilter(ContextCompat.getColor(context, R.color.status_dead))
+            } else {
+                binding.favoriteButton.clearColorFilter()
+            }
         }
     }
 
@@ -80,12 +92,7 @@ class CharacterAdapter(
     }
 
     class DiffCallback : DiffUtil.ItemCallback<Character.Result>() {
-        override fun areItemsTheSame(oldItem: Character.Result, newItem: Character.Result): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: Character.Result, newItem: Character.Result): Boolean {
-            return oldItem == newItem
-        }
+        override fun areItemsTheSame(oldItem: Character.Result, newItem: Character.Result) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: Character.Result, newItem: Character.Result) = oldItem == newItem
     }
 }

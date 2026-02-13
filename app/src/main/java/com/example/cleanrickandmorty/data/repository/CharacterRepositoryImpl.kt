@@ -1,5 +1,6 @@
 package com.example.cleanrickandmorty.data.repository
 
+import android.util.Log
 import com.example.cleanrickandmorty.data.datasource.CharacterService
 import com.example.cleanrickandmorty.data.mapper.toCharacter
 import com.example.cleanrickandmorty.data.mapper.toResult
@@ -10,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import okhttp3.Response
 import okio.IOException
 
 class CharacterRepositoryImpl (
@@ -18,6 +20,7 @@ class CharacterRepositoryImpl (
     override suspend fun getCharacter() : Flow<Either<String, Character>> = flow {
         try {
             val response = service.getCharacter()
+            Log.e("ololo", response.toCharacter().toString())
             emit(Either.Right(response.toCharacter()))
         } catch (e : IOException) {
             emit(Either.Left(e.localizedMessage ?: "Unknown error!"))

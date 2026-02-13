@@ -57,7 +57,6 @@ class DetailActivity : AppCompatActivity() {
             .centerCrop()
             .placeholder(android.R.color.darker_gray)
             .into(binding.image)
-        binding.location.text = character.location?.name ?: "Unknown location"
         binding.gender.text = character.gender
         binding.status.text = character.status
         setStatusIndicatorColor(character.status)
