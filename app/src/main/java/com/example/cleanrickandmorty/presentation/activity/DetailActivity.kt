@@ -1,6 +1,7 @@
 package com.example.cleanrickandmorty.presentation.activity
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -16,13 +17,28 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class DetailActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_ID = "extra_id" // <-- константа для передачи id
+    }
+
     private val binding by lazy { ActivityDetailBinding.inflate(layoutInflater) }
     private val viewModel: DetailViewModel by viewModel()
-    private val id by lazy { intent.getIntExtra("ID", 0) }
+
+    // Получаем id через константу
+    private val id by lazy { intent.getIntExtra(EXTRA_ID, 0) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
+        Log.d("DETAIL", "Received ID = $id") // Проверка в Logcat
+
+        if (id == 0) {
+            // Можно показать ошибку или finish()
+            finish()
+            return
+        }
+
         viewModel.getCharacterById(id)
         initializeObservers()
     }
@@ -32,18 +48,10 @@ class DetailActivity : AppCompatActivity() {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.resultState.collect { state ->
                     when (state) {
-                        is UIState.Empty -> {
-                            // Можно показать пустой экран или прогресс
-                        }
-                        is UIState.Error -> {
-                            // Можно показать ошибку
-                        }
-                        is UIState.Loading -> {
-                            // Можно показать loader
-                        }
-                        is UIState.Success -> {
-                            bindCharacter(state.data)
-                        }
+                        is UIState.Empty -> { /* loader */ }
+                        is UIState.Loading -> { /* loader */ }
+                        is UIState.Error -> { /* show error */ }
+                        is UIState.Success -> bindCharacter(state.data)
                     }
                 }
             }
@@ -51,8 +59,8 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun bindCharacter(character: Character.Result) {
-        binding.name.text = character.name   //имя
-        Glide.with(binding.image.context) //картинка
+        binding.name.text = character.name
+        Glide.with(binding.image.context)
             .load(character.image)
             .centerCrop()
             .placeholder(android.R.color.darker_gray)
@@ -62,7 +70,7 @@ class DetailActivity : AppCompatActivity() {
         setStatusIndicatorColor(character.status)
         binding.type.text = character.type
         binding.episode.text = character.episode
-            .map { url -> url.substringAfterLast("/") }
+            .map { it.substringAfterLast("/") }
             .joinToString(", ") { "Episode $it" }
     }
 

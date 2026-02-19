@@ -40,15 +40,15 @@ class CharactersFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel.getCharacter()
 
-        // В onViewCreated твоего CharactersFragment
         adapter = CharacterAdapter(requireContext(), object : CharacterAdapter.OnClickListener {
             override fun onClick(id: Int) {
                 val intent = Intent(requireContext(), DetailActivity::class.java).apply {
-                    putExtra("CHARACTER_ID", id)
+                    putExtra(DetailActivity.EXTRA_ID, id) // <-- передаём через константу
                 }
                 startActivity(intent)
             }
         })
+
         binding.characterRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.characterRecyclerView.adapter = adapter
 
