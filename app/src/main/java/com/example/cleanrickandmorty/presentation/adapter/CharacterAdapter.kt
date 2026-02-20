@@ -32,7 +32,6 @@ class CharacterAdapter(
     inner class ViewHolder(private val binding: CharacterHolderBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(character: Character.Result) {
-            // Загрузка изображения персонажа
             Glide.with(binding.image.context)
                 .load(character.image)
                 .centerCrop()
@@ -78,7 +77,7 @@ class CharacterAdapter(
             val iconRes = if (isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
             binding.favoriteButton.setImageResource(iconRes)
 
-            // Если иконка залита не тем цветом в XML, принудительно красим её в красный
+            // Если иконка залита не тем цветом в XML принудительно красим её в красный
             if (isFavorite) {
                 binding.favoriteButton.setColorFilter(ContextCompat.getColor(context, R.color.status_dead))
             } else {
