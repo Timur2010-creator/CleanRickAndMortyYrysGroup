@@ -18,7 +18,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class DetailActivity : AppCompatActivity() {
 
     companion object {
-        const val EXTRA_ID = "extra_id" // <-- константа для передачи id
+        const val EXTRA_ID = "extra_id" //Константа для передачи id
     }
 
     private val binding by lazy { ActivityDetailBinding.inflate(layoutInflater) }
@@ -31,7 +31,7 @@ class DetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        Log.d("DETAIL", "Received ID = $id") // Проверка в Logcat
+        Log.d("DETAIL", "Received ID = $id")
 
         if (id == 0) {
             // Можно показать ошибку или finish()
@@ -65,6 +65,7 @@ class DetailActivity : AppCompatActivity() {
             .centerCrop()
             .placeholder(android.R.color.darker_gray)
             .into(binding.image)
+        binding.location.text = character.location?.name ?: "Unknown location"
         binding.gender.text = character.gender
         binding.status.text = character.status
         setStatusIndicatorColor(character.status)

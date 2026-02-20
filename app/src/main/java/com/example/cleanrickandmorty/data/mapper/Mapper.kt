@@ -16,4 +16,5 @@ fun CharacterDto.Result.toResult() : Character.Result = Character.Result(
     species = this.species,
     type = this.type,
     episode = this.episode,
+    location = this.location
 )
