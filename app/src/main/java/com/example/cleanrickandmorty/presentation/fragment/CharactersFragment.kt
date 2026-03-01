@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -28,6 +29,9 @@ class CharactersFragment : Fragment() {
     private val viewModel: MainViewModel by viewModel()
     private lateinit var adapter: CharacterAdapter
 
+    // Храним полный список для фильтрации
+    private var fullList: List<Character.Result> = emptyList()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -43,7 +47,7 @@ class CharactersFragment : Fragment() {
         adapter = CharacterAdapter(requireContext(), object : CharacterAdapter.OnClickListener {
             override fun onClick(id: Int) {
                 val intent = Intent(requireContext(), DetailActivity::class.java).apply {
-                    putExtra(DetailActivity.EXTRA_ID, id) // <-- передаём через константу
+                    putExtra(DetailActivity.EXTRA_ID, id)
                 }
                 startActivity(intent)
             }
@@ -53,15 +57,30 @@ class CharactersFragment : Fragment() {
         binding.characterRecyclerView.adapter = adapter
 
         observeCharacters()
+
+        // Настройка SearchView
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean = false
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val filteredList = fullList.filter {
+                    it.name.contains(newText ?: "", ignoreCase = true)
+                }
+                adapter.submitList(filteredList)
+                return true
+            }
+        })
     }
 
     private fun observeCharacters() {
-
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.characterState.collect { state ->
                     when (state) {
-                        is UIState.Success -> adapter.submitList(state.data.results)
+                        is UIState.Success -> {
+                            fullList = state.data.results
+                            adapter.submitList(fullList)
+                        }
                         is UIState.Error -> Log.e("CharactersFragment", state.message)
                         is UIState.Loading -> Log.e("CharactersFragment", "Loading")
                         else -> {}
