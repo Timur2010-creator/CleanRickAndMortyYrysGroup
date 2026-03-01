@@ -29,7 +29,6 @@ class CharactersFragment : Fragment() {
     private val viewModel: MainViewModel by viewModel()
     private lateinit var adapter: CharacterAdapter
 
-    // Храним полный список для фильтрации
     private var fullList: List<Character.Result> = emptyList()
 
     override fun onCreateView(
@@ -58,14 +57,14 @@ class CharactersFragment : Fragment() {
 
         observeCharacters()
 
-        // Настройка SearchView
+        // 🔹 SearchView фильтрация и подсветка
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean = false
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                val filteredList = fullList.filter {
-                    it.name.contains(newText ?: "", ignoreCase = true)
-                }
+                val query = newText ?: ""
+                adapter.currentQuery = query
+                val filteredList = fullList.filter { it.name.contains(query, ignoreCase = true) }
                 adapter.submitList(filteredList)
                 return true
             }
@@ -79,7 +78,12 @@ class CharactersFragment : Fragment() {
                     when (state) {
                         is UIState.Success -> {
                             fullList = state.data.results
-                            adapter.submitList(fullList)
+
+                            // 🔹 фильтруем текущий список по тексту в SearchView
+                            val query = binding.searchView.query.toString()
+                            adapter.currentQuery = query
+                            val filteredList = fullList.filter { it.name.contains(query, ignoreCase = true) }
+                            adapter.submitList(filteredList)
                         }
                         is UIState.Error -> Log.e("CharactersFragment", state.message)
                         is UIState.Loading -> Log.e("CharactersFragment", "Loading")
