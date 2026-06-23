@@ -1,11 +1,13 @@
 package com.example.cleanrickandmorty.presentation.fragment
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -30,6 +32,7 @@ class CharactersFragment : Fragment() {
     private lateinit var adapter: CharacterAdapter
 
     private var fullList: List<Character.Result> = emptyList()
+    private val prefs by lazy { requireContext().getSharedPreferences("favorites", Context.MODE_PRIVATE) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,21 +46,38 @@ class CharactersFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel.getCharacter()
 
-        adapter = CharacterAdapter(requireContext(), object : CharacterAdapter.OnClickListener {
-            override fun onClick(id: Int) {
-                val intent = Intent(requireContext(), DetailActivity::class.java).apply {
-                    putExtra(DetailActivity.EXTRA_ID, id)
+        adapter = CharacterAdapter(
+            context = requireContext(),
+            isFavoriteScreen = false, // Главный экран
+            onClickListener = object : CharacterAdapter.OnClickListener {
+                override fun onClick(id: Int) {
+                    val intent = Intent(requireContext(), DetailActivity::class.java).apply {
+                        putExtra(DetailActivity.EXTRA_ID, id)
+                    }
+                    startActivity(intent)
                 }
-                startActivity(intent)
+            },
+            onFavoriteClickListener = { character ->
+                val currentIds = prefs.getStringSet("favorite_ids", emptySet())?.toMutableSet() ?: mutableSetOf()
+                val characterId = character.id.toString()
+
+                // Если уже есть в избранном — удаляем, если нет — добавляем
+                if (currentIds.contains(characterId)) {
+                    currentIds.remove(characterId)
+                    Toast.makeText(requireContext(), "${character.name} удален из избранного", Toast.LENGTH_SHORT).show()
+                } else {
+                    currentIds.add(characterId)
+                    Toast.makeText(requireContext(), "${character.name} добавлен в избранное!", Toast.LENGTH_SHORT).show()
+                }
+                prefs.edit().putStringSet("favorite_ids", currentIds).apply()
             }
-        })
+        )
 
         binding.characterRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.characterRecyclerView.adapter = adapter
 
         observeCharacters()
 
-        // 🔹 SearchView фильтрация и подсветка
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean = false
 
@@ -78,8 +98,6 @@ class CharactersFragment : Fragment() {
                     when (state) {
                         is UIState.Success -> {
                             fullList = state.data.results
-
-                            // 🔹 фильтруем текущий список по тексту в SearchView
                             val query = binding.searchView.query.toString()
                             adapter.currentQuery = query
                             val filteredList = fullList.filter { it.name.contains(query, ignoreCase = true) }

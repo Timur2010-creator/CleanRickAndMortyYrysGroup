@@ -18,10 +18,10 @@ import com.example.cleanrickandmorty.domain.model.Character
 
 class CharacterAdapter(
     private val context: Context,
-    private val onClickListener: OnClickListener
+    private val isFavoriteScreen: Boolean, // true для экрана избранного, false для главного
+    private val onClickListener: OnClickListener,
+    private val onFavoriteClickListener: (Character.Result) -> Unit
 ) : ListAdapter<Character.Result, CharacterAdapter.ViewHolder>(DiffCallback()) {
-
-    private val prefs by lazy { context.getSharedPreferences("favorites", Context.MODE_PRIVATE) }
 
     var currentQuery: String = ""
 
@@ -44,7 +44,6 @@ class CharacterAdapter(
                 .placeholder(android.R.color.darker_gray)
                 .into(binding.image)
 
-            // 🔹 Подсветка всех совпадений
             val spannable = SpannableString(character.name)
             if (query.isNotEmpty()) {
                 val regex = Regex(Regex.escape(query), RegexOption.IGNORE_CASE)
@@ -58,7 +57,6 @@ class CharacterAdapter(
                 }
             }
             binding.name.text = spannable
-
             binding.status.text = character.status
             binding.species.text = character.species
 
@@ -69,36 +67,36 @@ class CharacterAdapter(
             }
             binding.statusIndicator.setColorFilter(ContextCompat.getColor(context, colorRes))
 
-            val characterId = character.id.toString()
-            val favoriteIds = prefs.getStringSet("favorite_ids", emptySet())?.toMutableSet() ?: mutableSetOf()
-            var isFavorite = favoriteIds.contains(characterId)
-            updateFavoriteUI(isFavorite)
+            // Проверяем текущий статус лайка в SharedPreferences
+            val prefs = context.getSharedPreferences("favorites", Context.MODE_PRIVATE)
+            val favoriteIds = prefs.getStringSet("favorite_ids", emptySet()) ?: emptySet()
+            var isFavorite = favoriteIds.contains(character.id.toString())
+
+            // Логика переключения цвета сердечка
+            fun updateHeartUI(liked: Boolean) {
+                if (isFavoriteScreen || liked) {
+                    binding.favoriteButton.setImageResource(R.drawable.ic_heart_filled)
+                    binding.favoriteButton.setColorFilter(ContextCompat.getColor(context, R.color.status_dead))
+                } else {
+                    binding.favoriteButton.setImageResource(R.drawable.ic_heart_outline)
+                    binding.favoriteButton.clearColorFilter()
+                }
+            }
+
+            // Устанавливаем начальный цвет при обновлении списка
+            updateHeartUI(isFavorite)
 
             binding.favoriteButton.setOnClickListener {
-                val currentIds = prefs.getStringSet("favorite_ids", emptySet())?.toMutableSet() ?: mutableSetOf()
-                if (currentIds.contains(characterId)) {
-                    currentIds.remove(characterId)
-                    isFavorite = false
-                } else {
-                    currentIds.add(characterId)
-                    isFavorite = true
-                }
-                prefs.edit().putStringSet("favorite_ids", currentIds).apply()
-                updateFavoriteUI(isFavorite)
+                // Мгновенно меняем визуальное состояние сердца при нажатии
+                isFavorite = !isFavorite
+                updateHeartUI(isFavorite)
+
+                // Передаем клик во фрагмент для сохранения данных
+                onFavoriteClickListener(character)
             }
 
             binding.root.setOnClickListener {
                 onClickListener.onClick(character.id)
-            }
-        }
-
-        private fun updateFavoriteUI(isFavorite: Boolean) {
-            val iconRes = if (isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline
-            binding.favoriteButton.setImageResource(iconRes)
-            if (isFavorite) {
-                binding.favoriteButton.setColorFilter(ContextCompat.getColor(context, R.color.status_dead))
-            } else {
-                binding.favoriteButton.clearColorFilter()
             }
         }
     }

@@ -34,8 +34,7 @@ class DetailActivity : AppCompatActivity() {
         Log.d("DETAIL", "Received ID = $id")
 
         if (id == 0) {
-            // Можно показать ошибку или finish()
-            finish()
+            finish() // Можно показать ошибку или finish()
             return
         }
 
@@ -48,17 +47,17 @@ class DetailActivity : AppCompatActivity() {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.resultState.collect { state ->
                     when (state) {
-                        is UIState.Empty -> { /* loader */ }
-                        is UIState.Loading -> { /* loader */ }
-                        is UIState.Error -> { /* show error */ }
-                        is UIState.Success -> bindCharacter(state.data)
+                        is UIState.Empty -> { /* loader */ }  // Нечего
+                        is UIState.Loading -> { /* loader */ } // Загрузка
+                        is UIState.Error -> { /* show error */ } //Ошибка
+                        is UIState.Success -> bindCharacter(state.data) // Успешно, показ персонажей
                     }
                 }
             }
         }
     }
 
-    private fun bindCharacter(character: Character.Result) {
+    private fun bindCharacter(character: Character.Result) { //Код для вызова данных персонажей на DetailScreen
         binding.name.text = character.name
         Glide.with(binding.image.context)
             .load(character.image)
@@ -75,7 +74,7 @@ class DetailActivity : AppCompatActivity() {
             .joinToString(", ") { "Episode $it" }
     }
 
-    private fun setStatusIndicatorColor(status: String?) {
+    private fun setStatusIndicatorColor(status: String?) { // Код для того чтобы изображать статус персонажей
         val colorRes = when (status) {
             "Alive" -> R.color.status_alive
             "Dead" -> R.color.status_dead

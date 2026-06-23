@@ -23,36 +23,55 @@ class FavoritesActivity : AppCompatActivity(), CharacterAdapter.OnClickListener 
     private lateinit var adapter: CharacterAdapter
     private val prefs by lazy { getSharedPreferences("favorites", Context.MODE_PRIVATE) }
 
+    private var allCharacters: List<Character.Result> = emptyList()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        adapter = CharacterAdapter(this, this) // передаём контекст и listener
+        // Запускаем загрузку данных для Activity
+        viewModel.getCharacter()
+
+        adapter = CharacterAdapter(
+            context = this,
+            isFavoriteScreen = true,
+            onClickListener = this,
+            onFavoriteClickListener = { character ->
+                val currentIds = prefs.getStringSet("favorite_ids", emptySet())?.toMutableSet() ?: mutableSetOf()
+                currentIds.remove(character.id.toString())
+                prefs.edit().putStringSet("favorite_ids", currentIds).apply()
+
+                updateFavoritesList(allCharacters)
+            }
+        )
         binding.favoritesRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.favoritesRecyclerView.adapter = adapter
 
         loadFavorites()
     }
 
-    private fun loadFavorites() {
-        val favoriteIds = prefs.getStringSet("favorite_ids", emptySet()) ?: emptySet()
-
+    private fun loadFavorites() {  //Загрузка в раздел "Избранные"
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.characterState.collect { state: UIState<Character> ->
-                    if (state is UIState.Success) {
-                        val favorites: List<Character.Result> =
-                            state.data.results.filter { favoriteIds.contains(it.id.toString()) }
-                        adapter.submitList(favorites)
+                    if (state is UIState.Success) {         // ЕСЛИ ЗАГРУЗКА ДАННЫХ УСПЕШНА,ТО ОТОБРАЖАЕМ
+                        allCharacters = state.data.results  // ОБНОВЛЕННЫХ ПЕРСОНАЖЕЙ
+                        updateFavoritesList(allCharacters)
                     }
                 }
             }
         }
     }
 
+    private fun updateFavoritesList(characters: List<Character.Result>) { // ОБНОВЛЕНИЕ ИЗБРАННОГО ЛИСТА
+        val favoriteIds = prefs.getStringSet("favorite_ids", emptySet()) ?: emptySet()
+        val favorites = characters.filter { favoriteIds.contains(it.id.toString()) }
+        adapter.submitList(favorites)
+    }
+
     override fun onClick(id: Int) {
         val intent = Intent(this, DetailActivity::class.java)
-        intent.putExtra("ID", id)
+        intent.putExtra(DetailActivity.EXTRA_ID, id)
         startActivity(intent)
     }
 }
