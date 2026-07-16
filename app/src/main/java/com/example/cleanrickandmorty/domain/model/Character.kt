@@ -15,6 +15,6 @@ data class Character(
         val species: String,
         val type: String,
         val episode: List<String>,
-        val location: Location
+        val location: Location,
         )
 }
